@@ -64,17 +64,12 @@ namespace ComSniff
 
             this.Text = Application.ProductName;
 
-            serialPort1.BaudRate = 57600;
-            serialPort1.Parity = Parity.None;
-            serialPort1.Handshake = Handshake.RequestToSend; // ??
-            serialPort1.DataBits = 8;
-            serialPort1.StopBits = StopBits.One;
-
-            serialPort2.BaudRate = 57600;
-            serialPort2.Parity = Parity.None;
-            serialPort2.Handshake = Handshake.RequestToSend; // ??
-            serialPort2.DataBits = 8;
-            serialPort2.StopBits = StopBits.One;
+            // TODO:  remember last setting
+            comboBoxBitsPerSecond.SelectedItem = "115200";
+            comboBoxDataBits.SelectedItem = "8";
+            comboBoxFlowControl.SelectedIndex = 0;
+            comboBoxStopBits.SelectedIndex = 0;
+            comboBoxParity.SelectedIndex = 0;
 
             timer1.Enabled = true;
         }
@@ -148,6 +143,54 @@ namespace ComSniff
             //serialPort1 = new SerialPort(strPortName, 9600, Parity.None, 8, StopBits.One);
             serialPort1.PortName = strPortName1;
             serialPort2.PortName = strPortName2;
+
+            serialPort1.BaudRate = Int32.Parse(comboBoxBitsPerSecond.SelectedItem.ToString());
+
+            switch (comboBoxParity.SelectedItem.ToString())
+            {
+                case "Even":
+                    serialPort1.Parity = Parity.Even;
+                    break;
+                case "Odd":
+                    serialPort1.Parity = Parity.Odd;
+                    break;
+                case "None":
+                    serialPort1.Parity = Parity.None;
+                    break;
+                case "Mark":
+                    serialPort1.Parity = Parity.Mark;
+                    break;
+                case "Space":
+                    serialPort1.Parity = Parity.Space;
+                    break;
+            }
+
+
+            serialPort1.DataBits = Int32.Parse(comboBoxDataBits.SelectedItem.ToString());
+            serialPort1.StopBits = (StopBits)Int32.Parse(comboBoxStopBits.SelectedItem.ToString());
+
+            switch (comboBoxFlowControl.SelectedItem.ToString())
+            {
+                case "Xon / Xoff":
+                    serialPort1.Handshake = Handshake.XOnXOff;
+                    break;
+                case "Hardware":
+                    serialPort1.Handshake = Handshake.RequestToSend;
+                    break;
+                case "Both":
+                    serialPort1.Handshake = Handshake.RequestToSendXOnXOff;
+                    break;
+                case "None":
+                    serialPort1.Handshake = Handshake.None;
+                    break;
+            }
+
+
+            serialPort2.BaudRate = serialPort1.BaudRate;
+            serialPort2.Parity = serialPort1.Parity;
+            serialPort2.DataBits = serialPort1.DataBits;
+            serialPort2.StopBits = serialPort1.StopBits;
+            serialPort2.Handshake = serialPort1.Handshake;
 
             try
             {
@@ -290,6 +333,11 @@ namespace ComSniff
 
         }
 
-     
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AboutBox1 about = new AboutBox1();
+            about.ShowDialog();
+
+        }
     }
 }
