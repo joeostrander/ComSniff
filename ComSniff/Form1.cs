@@ -79,7 +79,7 @@ namespace ComSniff
         {
             listPorts1.Clear();
             listPorts2.Clear();
-            string strQuery = "Select * from Win32_PnPEntity Where Name LIKE '% (COM%)'";
+            string str_query_pnp = "Select * from Win32_PnPEntity Where Name LIKE '% (COM%)'";
 
             listPorts1.Add(new KeyValuePair<string, string>("", ""));
             listPorts2.Add(new KeyValuePair<string, string>("", ""));
@@ -87,7 +87,7 @@ namespace ComSniff
             try
             {
 
-                ManagementObjectSearcher searcher = new ManagementObjectSearcher(strQuery);
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher(str_query_pnp);
                 ManagementObjectCollection collection = searcher.Get();
 
                 foreach (ManagementObject item in collection)
@@ -103,15 +103,46 @@ namespace ComSniff
                         listPorts1.Add(new KeyValuePair<string, string>(portname, portname.PadRight(6, ' ') + porttext));
                         listPorts2.Add(new KeyValuePair<string, string>(portname, portname.PadRight(6, ' ') + porttext));
                     }
-
-
                 }
 
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Could not get serial port list!", "Serial Ports", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
 
+            // Also search Win32_SerialPort for any not found
+            string str_query_serialport = "Select * from Win32_SerialPort";
+
+            try
+            {
+
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher(str_query_serialport);
+                ManagementObjectCollection collection = searcher.Get();
+
+                foreach (ManagementObject item in collection)
+                {
+                    string portname = item.Properties["DeviceID"].Value.ToString();
+                    string porttext = item.Properties["Name"].Value.ToString();
+
+                    KeyValuePair<string, string> kvp = new KeyValuePair<string, string>(portname, portname.PadRight(6, ' ') + porttext);
+
+                    var pair = listPorts1.FirstOrDefault(x => x.Key == portname);
+                    
+                    if (pair.Key == null)
+                    {
+                        Console.WriteLine("Missing:  {0}", portname);
+                        listPorts1.Add(kvp);
+                        listPorts2.Add(kvp);
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not get serial port list!", "Serial Ports", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
             }
         }
 
@@ -204,7 +235,7 @@ namespace ComSniff
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                //Console.WriteLine(ex.Message);
                 boolConnected = false;
 
                 if (serialPort1.IsOpen)
@@ -216,6 +247,7 @@ namespace ComSniff
                 {
                     serialPort2.Close();
                 }
+                MessageBox.Show(ex.Message, "Connect Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
 
         }
@@ -290,7 +322,27 @@ namespace ComSniff
                 Console.WriteLine("{0}\tCOM A SENT:  {1}", DateTime.Now, recvHex + " ");
 
 
-                ThreadSafeDelegate(delegate { textBoxSniffed.AppendText(String.Format("A => B [ {0} ]", BitConverter.ToString(buffer)) + Environment.NewLine); });
+                StringBuilder sb = new StringBuilder(byteLength * 3);
+                foreach (byte b in buffer)
+                {
+                    if (b == 0x00)
+                    {
+                        sb.Append("00 ");
+                    }
+                    else
+                    {
+                        sb.Append(b.ToString("X2"));
+                        sb.Append(" ");
+                    }
+                    
+                }
+                if (byteLength == 0)
+                {
+                    sb.Append("???");
+                }
+                    
+                //ThreadSafeDelegate(delegate { textBoxSniffed.AppendText(String.Format("A => B [ {0} ]", BitConverter.ToString(buffer)) + Environment.NewLine); });
+                ThreadSafeDelegate(delegate { textBoxSniffed.AppendText(String.Format("A => B [ {0} ]", sb.ToString()) + Environment.NewLine); });
 
 
                 //redirect to COM B

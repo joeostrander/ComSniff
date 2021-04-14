@@ -8,3 +8,4 @@ C:\Users\qojmo2\Google Drive\DEV\VisualStudio\ComSniff\ComSniff\obj\Release\ComS
 C:\Users\qojmo2\Google Drive\DEV\VisualStudio\ComSniff\ComSniff\obj\Release\ComSniff.csproj.CoreCompileInputs.cache
 C:\Users\qojmo2\Google Drive\DEV\VisualStudio\ComSniff\ComSniff\obj\Release\ComSniff.exe
 C:\Users\qojmo2\Google Drive\DEV\VisualStudio\ComSniff\ComSniff\obj\Release\ComSniff.pdb
+C:\Users\qojmo2\Google Drive\DEV\VisualStudio\ComSniff\ComSniff\obj\Release\ComSniff.csprojAssemblyReference.cache
